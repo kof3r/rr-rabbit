@@ -1,0 +1,61 @@
+version: "3"
+
+services:
+  api:
+    build:
+      context: './api'
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./api:/usr/app
+    ports:
+      - 3000:3000
+    environment:
+      PORT: 3000
+      PORT_HEALTHCHECK: 3112
+      AMQP_URL: $AMQP_URI
+      WAIT_HOSTS: rabbit:5672
+      SERVICE_NAME: api
+      SERVICE_GREETER: $SERVICE_GREETER
+      SERVICE_NUMBER_ADDER: $SERVICE_NUMBER_ADDER
+      SERVICE_NUMBER_PARSER: $SERVICE_NUMBER_PARSER
+
+  service-greeter:
+    build:
+      context: './services/greeter'
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./services/greeter:/usr/app
+    environment:
+      PORT_HEALTHCHECK: 3112
+      SERVICE_NAME: $SERVICE_GREETER
+      AMQP_URL: $AMQP_URI
+      WAIT_HOSTS: rabbit:5672
+
+  service-number-adder:
+    build:
+      context: './services/number-adder'
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./services/number-adder:/usr/app
+    environment:
+      PORT_HEALTHCHECK: 3112
+      SERVICE_NAME: $SERVICE_NUMBER_ADDER
+      AMQP_URL: $AMQP_URI
+      WAIT_HOSTS: rabbit:5672
+
+  service-number-parser:
+    build:
+      context: './services/number-parser'
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./services/number-parser:/usr/app
+    environment:
+      PORT_HEALTHCHECK: 3112
+      SERVICE_NAME: $SERVICE_NUMBER_PARSER
+      AMQP_URL: $AMQP_URI
+      WAIT_HOSTS: rabbit:5672
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - 8081:15672
